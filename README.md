@@ -17,14 +17,14 @@ so the form and chat are two doors into one record.
 
 ```
 ┌─────────────────────────────┐        ┌──────────────────────────────┐
-│  React + Redux Frontend     │  REST  │  FastAPI Backend              │
-│  - InteractionForm.jsx      │◄──────►│  - /api/interactions (CRUD)   │
-│  - ChatAssistant.jsx        │        │  - /api/chat (agent endpoint) │
-└─────────────────────────────┘        └───────────────┬────────────────┘
+│  React + Redux Frontend     │  REST  │  FastAPI Backend             │
+│  - InteractionForm.jsx      │◄──────►│  - /api/interactions (CRUD)  │
+│  - ChatAssistant.jsx        │        │  - /api/chat (agent endpoint)│
+└─────────────────────────────┘        └──────────────────┬───────────┘
                                                           │
                                                  ┌────────▼─────────┐
-                                                 │  LangGraph Agent  │
-                                                 │  (ReAct loop)     │
+                                                 │  LangGraph Agent │
+                                                 │  (ReAct loop)    │
                                                  └────────┬─────────┘
                                                            │ binds
                                     ┌──────────────────────┼────────────────────────┐
@@ -33,10 +33,10 @@ so the form and chat are two doors into one record.
                         (LLM entity extraction)  (modify existing)      schedule_followup
                                                                        suggest_next_best_action
                                                            │
-                                                  ┌────────▼─────────┐
-                                                  │  Postgres (SQLA)  │
-                                                  │  hcps / interactions │
-                                                  └────────────────────┘
+                                                  ┌────────▼────────────┐
+                                                  │  Postgres (SQLA)    │
+                                                  │  hcps / interactions│
+                                                  └─────────────────────┘
 ```
 
 ## Role of the LangGraph agent
@@ -64,8 +64,8 @@ scheduled, without the rep touching a form.
 - **Frontend:** React + Redux Toolkit, Google Inter font
 - **Backend:** FastAPI (Python)
 - **Agent framework:** LangGraph (ReAct loop, `ToolNode`)
-- **LLM:** Groq — `gemma2-9b-it` for extraction (fast, cheap), can swap to
-  `llama-3.3-70b-versatile` for the reasoning-heavier `suggest_next_best_action` tool
+- **LLM:** Groq — `openai/gpt-oss-20b` for extraction (fast, cheap), can swap to
+  `openai/gpt-oss-120b` for the reasoning-heavier `suggest_next_best_action` tool
 - **Database:** PostgreSQL via SQLAlchemy
 
 ## Running locally
@@ -106,3 +106,13 @@ Tables are auto-created on backend startup via SQLAlchemy's `create_all`.
   implementation would pipe audio through a speech-to-text service before hitting
   `log_interaction`.
 - No auth/multi-tenant rep identity — `session_id` is hardcoded for the demo.
+
+## A note on the LLM model choice
+
+The assignment brief specifies `gemma2-9b-it`. By the time of this submission, Groq had
+deprecated that model (and its originally-suggested fallback, `llama-3.3-70b-versatile`, is
+also deprecated as of June 2026). I substituted Groq's currently recommended replacements:
+`openai/gpt-oss-20b` for fast/cheap extraction tasks (`log_interaction`, `edit_interaction`),
+and `openai/gpt-oss-120b` available for heavier reasoning tasks. These fill the same roles the
+brief intended — a fast small model for structured extraction, a larger model available for
+more nuanced reasoning — just with Groq's current model lineup.
